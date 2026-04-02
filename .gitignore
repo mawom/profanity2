@@ -1,0 +1,8 @@
+*.o
+*.so
+*.x64
+*.exe
+profanity2
+cache-opencl.*
+bin
+.DS_Store

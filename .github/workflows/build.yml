@@ -1,0 +1,91 @@
+name: Build
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            name: macos-arm64
+            cflags: -std=c++11 -O2
+            ldflags: -framework OpenCL
+          - os: ubuntu-latest
+            name: linux-x64
+            cflags: -std=c++11 -O2
+            ldflags: -lOpenCL
+            setup: sudo apt-get update && sudo apt-get install -y ocl-icd-opencl-dev
+          - os: windows-latest
+            name: windows-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup dependencies
+        if: matrix.setup
+        run: ${{ matrix.setup }}
+
+      - name: Build (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          g++ ${{ matrix.cflags }} -c Dispatcher.cpp -o Dispatcher.o
+          g++ ${{ matrix.cflags }} -c Mode.cpp -o Mode.o
+          g++ ${{ matrix.cflags }} -c precomp.cpp -o precomp.o
+          g++ ${{ matrix.cflags }} -c profanity.cpp -o profanity.o
+          g++ ${{ matrix.cflags }} -c SpeedSample.cpp -o SpeedSample.o
+          g++ Dispatcher.o Mode.o precomp.o profanity.o SpeedSample.o ${{ matrix.ldflags }} -o profanity2
+
+      - name: Setup MSVC
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: cmd
+        run: |
+          vcpkg install opencl:x64-windows
+          cl /std:c++14 /O2 /EHsc /I"%VCPKG_INSTALLATION_ROOT%\installed\x64-windows\include" Dispatcher.cpp Mode.cpp precomp.cpp profanity.cpp SpeedSample.cpp /Fe:profanity2.exe /link /LIBPATH:"%VCPKG_INSTALLATION_ROOT%\installed\x64-windows\lib" OpenCL.lib ws2_32.lib
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: profanity2-${{ matrix.name }}
+          path: |
+            profanity2
+            profanity2.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Package
+        run: |
+          cd artifacts
+          for dir in */; do
+            name="${dir%/}"
+            cd "$name"
+            chmod +x profanity2 2>/dev/null || true
+            zip -r "../${name}.zip" .
+            cd ..
+          done
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.zip
+          generate_release_notes: true
