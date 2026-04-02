@@ -45,16 +45,18 @@ jobs:
           g++ ${{ matrix.cflags }} -c SpeedSample.cpp -o SpeedSample.o
           g++ Dispatcher.o Mode.o precomp.o profanity.o SpeedSample.o ${{ matrix.ldflags }} -o profanity2
 
+      - name: Setup MSVC
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
-        shell: powershell
+        shell: cmd
         run: |
-          # Install OpenCL headers and ICD loader
           vcpkg install opencl:x64-windows
-          $env:OPENCL_ROOT = "C:\vcpkg\installed\x64-windows"
-          $inc = "$env:OPENCL_ROOT\include"
-          $lib = "$env:OPENCL_ROOT\lib"
-          cl /std:c++14 /O2 /EHsc /I"$inc" Dispatcher.cpp Mode.cpp precomp.cpp profanity.cpp SpeedSample.cpp /Fe:profanity2.exe /link /LIBPATH:"$lib" OpenCL.lib
+          cl /std:c++14 /O2 /EHsc /I"%VCPKG_INSTALLATION_ROOT%\installed\x64-windows\include" Dispatcher.cpp Mode.cpp precomp.cpp profanity.cpp SpeedSample.cpp /Fe:profanity2.exe /link /LIBPATH:"%VCPKG_INSTALLATION_ROOT%\installed\x64-windows\lib" OpenCL.lib
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
