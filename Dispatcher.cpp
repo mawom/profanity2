@@ -17,6 +17,8 @@ mp_number g_seedPrivKey;
 
 #if defined(__APPLE__) || defined(__MACOSX)
 #include <machine/endian.h>
+#elif defined(_WIN32)
+#include <winsock2.h>
 #else
 #include <arpa/inet.h>
 #endif
