@@ -212,6 +212,19 @@ int main(int argc, char * * argv) {
 
 		// --prefix / --suffix → auto-build --matching pattern
 		if (!strPrefix.empty() || !strSuffix.empty()) {
+			const std::string hexChars = "0123456789abcdefABCDEF";
+			for (char c : strPrefix) {
+				if (hexChars.find(c) == std::string::npos) {
+					std::cout << "error: prefix contains non-hex character '" << c << "'" << std::endl;
+					return 1;
+				}
+			}
+			for (char c : strSuffix) {
+				if (hexChars.find(c) == std::string::npos) {
+					std::cout << "error: suffix contains non-hex character '" << c << "'" << std::endl;
+					return 1;
+				}
+			}
 			size_t total = strPrefix.size() + strSuffix.size();
 			if (total > 40) {
 				std::cout << "error: prefix + suffix exceeds 40 hex chars" << std::endl;

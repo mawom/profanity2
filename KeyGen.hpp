@@ -195,14 +195,13 @@ private:
                 product[i] = lo_part & 0xFFFFFFFF;
                 carry = (lo_part >> 32) + hi; // hi<<32 contribution goes to next word
             }
-            // carry goes into overflow
+            // Remaining carry: carry * 2^256 ≡ carry * C (mod p)
+            // where C = 0x1000003D1 = 2^32 + 0x3D1
             if (carry) {
                 cl_ulong lo_part = carry * 0x3D1ULL + product[0];
                 product[0] = lo_part & 0xFFFFFFFF;
-                carry = (lo_part >> 32) + carry; // Hmm this recurse
-                // Actually for small carry, just add to product[1]
-                product[1] += carry;
-                // Handle propagation
+                cl_ulong hi_part = (lo_part >> 32) + carry; // carry * 2^32 term
+                product[1] += hi_part;
                 for (int i = 1; i < MP_NWORDS && product[i] > 0xFFFFFFFF; ++i) {
                     product[i + 1] += product[i] >> 32;
                     product[i] &= 0xFFFFFFFF;

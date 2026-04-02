@@ -1,5 +1,7 @@
 # profanity2
 
+[中文文档](README_zh.md)
+
 GPU-accelerated Ethereum vanity address generator. Single binary, zero dependencies.
 
 Fork of [1inch/profanity2](https://github.com/1inch/profanity2) — added built-in key generation, `--prefix`/`--suffix` shortcuts, and embedded OpenCL kernels so the entire tool is one file.
