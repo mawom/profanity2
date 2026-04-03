@@ -1,26 +1,28 @@
+// Windows headers must come before CL headers to avoid conflicts
+#if defined(_WIN32)
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
+#endif
+
 #include "Dispatcher.hpp"
 #include "KeyGen.hpp"
 
-// Includes
+#include <algorithm>
 #include <stdexcept>
 #include <iostream>
 #include <thread>
 #include <sstream>
 #include <iomanip>
 #include <random>
-#include <thread>
 
-// Vanigen: seed private key for auto-key mode
+// Seed private key for auto-key mode
 bool g_bAutoKey = false;
 mp_number g_seedPrivKey;
-#include <algorithm>
 
 #if defined(__APPLE__) || defined(__MACOSX)
 #include <machine/endian.h>
-#elif defined(_WIN32)
-#define NOMINMAX
-#include <winsock2.h>
-#else
+#elif !defined(_WIN32)
 #include <arpa/inet.h>
 #endif
 
