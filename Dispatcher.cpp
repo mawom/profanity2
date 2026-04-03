@@ -56,14 +56,11 @@ static cl_ulong4 fromHex(const std::string & strHex) {
 		++index;
 	}
 
-	cl_ulong4 res = {
-		.s = {
-			htonll(*(uint64_t *)(data + 24)),
-			htonll(*(uint64_t *)(data + 16)),
-			htonll(*(uint64_t *)(data + 8)),
-			htonll(*(uint64_t *)(data + 0)),
-		}
-	};
+	cl_ulong4 res;
+	res.s[0] = htonll(*(uint64_t *)(data + 24));
+	res.s[1] = htonll(*(uint64_t *)(data + 16));
+	res.s[2] = htonll(*(uint64_t *)(data + 8));
+	res.s[3] = htonll(*(uint64_t *)(data + 0));
 	return res;
 }
 
