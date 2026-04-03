@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 
-static const std::string embedded_keccak_cl = R"OPENCL(
-/* This Keccak implementation is an amalgamation of:
+static const char embedded_keccak_cl_data[] =
+    R"CLSRC(/* This Keccak implementation is an amalgamation of:
  * Tiny SHA3 implementation by Markku-Juhani O. Saarinen:
  *   https://github.com/mjosaarinen/tiny_sha3
  * Keccak implementation found in xptMiner-gpu @ Github:
@@ -141,10 +141,12 @@ void sha3_keccakf(ethhash * const h)
 		IOTA(st[0], keccakf_rndc[i]);
 	}
 }
-)OPENCL";
+)CLSRC"
+    ;
+static const std::string embedded_keccak_cl(embedded_keccak_cl_data, sizeof(embedded_keccak_cl_data) - 1);
 
-static const std::string embedded_profanity_cl = R"OPENCL(
-/* profanity.cl
+static const char embedded_profanity_cl_data[] =
+    R"CLSRC(/* profanity.cl
  * ============
  * Contains multi-precision arithmetic functions and iterative elliptical point
  * addition which is the heart of profanity.
@@ -560,7 +562,8 @@ void point_add(point * const r, point * const p, point * const o) {
 
 /* ------------------------------------------------------------------------ */
 /* Profanity.                                                               */
-/* ------------------------------------------------------------------------ */
+/* -------------------------------------)CLSRC"
+    R"CLSRC(----------------------------------- */
 typedef struct {
 	uint found;
 	uint foundId;
@@ -983,7 +986,8 @@ __kernel void profanity_score_mirror(__global mp_number * const pInverse, __glob
 		const uchar rightLeft = (hash[10 + i] & 0xF0) >> 4;
 		const uchar rightRight = (hash[10 + i] & 0x0F);
 
-		if (leftRight != rightLeft) {
+		if (left)CLSRC"
+    R"CLSRC(Right != rightLeft) {
 			break;
 		}
 
@@ -1015,5 +1019,7 @@ __kernel void profanity_score_doubles(__global mp_number * const pInverse, __glo
 
 	profanity_result_update(id, hash, pResult, score, scoreMax);
 }
-)OPENCL";
+)CLSRC"
+    ;
+static const std::string embedded_profanity_cl(embedded_profanity_cl_data, sizeof(embedded_profanity_cl_data) - 1);
 

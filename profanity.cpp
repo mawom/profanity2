@@ -116,7 +116,7 @@ std::vector<std::string> getBinaries(cl_program & clProgram) {
 }
 
 unsigned int getUniqueDeviceIdentifier(const cl_device_id & deviceId) {
-#if defined(CL_DEVICE_TOPOLOGY_AMD)
+#if defined(CL_DEVICE_TOPOLOGY_AMD) && !defined(_WIN32)
 	auto topology = clGetWrapper<cl_device_topology_amd>(clGetDeviceInfo, deviceId, CL_DEVICE_TOPOLOGY_AMD);
 	if (topology.raw.type == CL_DEVICE_TOPOLOGY_TYPE_PCIE_AMD) {
 		return (topology.pcie.bus << 16) + (topology.pcie.device << 8) + topology.pcie.function;
