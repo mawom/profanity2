@@ -97,7 +97,11 @@ cl /std:c++14 /O2 /EHsc /I<opencl_include> Dispatcher.cpp Mode.cpp precomp.cpp p
 
 - 基于 profanity2 的「设计即安全」架构
 - 私钥永远不暴露给 GPU
-- 使用系统级密码学随机数生成器
+- **纵深防御熵源**（v1.1.0+）：种子私钥由三路独立熵源 XOR 混合 + SHA-256 白化生成
+  - 源 1：操作系统 CSPRNG（`BCryptGenRandom` / `getrandom` / `getentropy`）
+  - 源 2：硬件 RNG（x86 的 RDSEED，Apple Silicon / ARM 回退到 `arc4random_buf` 或 `/dev/urandom`）
+  - 源 3：高精度时序 + 进程状态抖动（多时钟、PID/TID、栈/堆地址、带 `yield` 的重复采样）
+  - 任一单源被攻破都不影响输出的密码学随机性。已缓解 AMD Zen 5 RDSEED 偏置漏洞（CVE-2025-62626）——仅使用 64-bit 变体且绝不单独依赖 RDSEED
 - OpenCL 内核嵌入二进制，无需外部文件
 
 ## 致谢

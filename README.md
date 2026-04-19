@@ -60,6 +60,8 @@ cl /std:c++14 /O2 /EHsc /I<opencl_include> Dispatcher.cpp Mode.cpp precomp.cpp p
 
 **Safe by design** — the GPU only sees the public key, never the private key.
 
+**Hardened RNG** (v1.1.0+) — the seed private key is produced by XOR-mixing three independent entropy sources (OS CSPRNG + hardware RDSEED / `arc4random_buf` + runtime timing jitter) and SHA-256 whitening the result. The output stays cryptographically random even if any single source is compromised — including the AMD Zen 5 RDSEED bias (CVE-2025-62626), which is mitigated by using the 64-bit variant and never relying on RDSEED alone.
+
 ## Performance
 
 | GPU | Speed |
